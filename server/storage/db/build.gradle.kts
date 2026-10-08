@@ -19,3 +19,6 @@ dependencies {
   implementation(libs.kotlinx.coroutines)
   implementation(libs.sqldelight.driver)
 }
+dependencies {
+  testImplementation(libs.kotlin.test.junit)
+}

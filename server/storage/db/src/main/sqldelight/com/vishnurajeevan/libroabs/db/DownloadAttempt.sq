@@ -1,0 +1,91 @@
+CREATE TABLE download_attempt (
+  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+  isbn TEXT NOT NULL,
+  title TEXT NOT NULL,
+  trigger_source TEXT NOT NULL,
+  status TEXT NOT NULL,
+  error TEXT,
+  format TEXT,
+  requested_format TEXT,
+  queued_at INTEGER NOT NULL,
+  started_at INTEGER,
+  finished_at INTEGER
+);
+
+CREATE INDEX download_attempt_isbn ON download_attempt(isbn);
+CREATE INDEX download_attempt_status ON download_attempt(status);
+
+insertAttempt:
+INSERT INTO download_attempt(isbn, title, trigger_source, status, requested_format, queued_at)
+VALUES (?, ?, ?, 'QUEUED', ?, ?);
+
+lastInsertId:
+SELECT last_insert_rowid();
+
+selectChanges:
+SELECT changes();
+
+markRunning:
+UPDATE download_attempt
+SET status = 'RUNNING', started_at = ?
+WHERE id = ?;
+
+markFinished:
+UPDATE download_attempt
+SET status = ?, error = ?, format = ?, finished_at = ?
+WHERE id = ?;
+
+selectById:
+SELECT * FROM download_attempt WHERE id = ?;
+
+selectActive:
+SELECT * FROM download_attempt
+WHERE status IN ('QUEUED', 'RUNNING')
+ORDER BY id ASC;
+
+selectRecent:
+SELECT * FROM download_attempt
+ORDER BY id DESC
+LIMIT ?;
+
+selectForIsbn:
+SELECT * FROM download_attempt
+WHERE isbn = ?
+ORDER BY id DESC
+LIMIT ?;
+
+selectPage:
+SELECT * FROM download_attempt
+WHERE (:status IS NULL OR status = :status)
+  AND (:query IS NULL OR title LIKE '%' || :query || '%' ESCAPE '\' OR isbn LIKE '%' || :query || '%' ESCAPE '\')
+ORDER BY id DESC
+LIMIT :limit OFFSET :offset;
+
+countPage:
+SELECT count(*) FROM download_attempt
+WHERE (:status IS NULL OR status = :status)
+  AND (:query IS NULL OR title LIKE '%' || :query || '%' ESCAPE '\' OR isbn LIKE '%' || :query || '%' ESCAPE '\');
+
+statusCounts:
+SELECT status, count(*) FROM download_attempt GROUP BY status;
+
+latestPerIsbn:
+SELECT * FROM download_attempt
+WHERE id IN (SELECT max(id) FROM download_attempt GROUP BY isbn);
+
+interruptActive:
+UPDATE download_attempt
+SET status = 'FAILED', error = ?, finished_at = ?
+WHERE status IN ('QUEUED', 'RUNNING');
+
+deleteFinished:
+DELETE FROM download_attempt
+WHERE status NOT IN ('QUEUED', 'RUNNING');
+
+deleteFinishedBefore:
+DELETE FROM download_attempt
+WHERE status NOT IN ('QUEUED', 'RUNNING') AND queued_at < ?;
+
+deleteFinishedById:
+DELETE FROM download_attempt
+WHERE id = ? AND status NOT IN ('QUEUED', 'RUNNING');
