@@ -6,8 +6,10 @@ import com.vishnurajeevan.libroabs.models.libro.Book
 import com.vishnurajeevan.libroabs.models.libro.Chapter
 import com.vishnurajeevan.libroabs.models.libro.Tracks
 import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
+import dev.zacsweers.metro.binding
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import net.bramp.ffmpeg.FFmpegExecutor
@@ -27,15 +29,16 @@ import java.util.concurrent.TimeUnit
 
 @Inject
 @SingleIn(AppScope::class)
+@ContributesBinding(AppScope::class, binding = binding<M4bConverter>())
 class FfmpegClient(
   @Named("ffprobePath") ffprobePath: String,
   private val executor: FFmpegExecutor,
   private val lfdLogger: Logger,
-) {
+) : M4bConverter {
 
   private val ffprobe = FFprobe(ffprobePath)
 
-  suspend fun convertBookToM4b(book: Book, tracks: List<Tracks>, targetDirectory: File, audioQuality: String) {
+  override suspend fun convertBookToM4b(book: Book, tracks: List<Tracks>, targetDirectory: File, audioQuality: String) {
     val newFile = File(targetDirectory, "${book.title}.m4b")
 
     // Download Cover Image

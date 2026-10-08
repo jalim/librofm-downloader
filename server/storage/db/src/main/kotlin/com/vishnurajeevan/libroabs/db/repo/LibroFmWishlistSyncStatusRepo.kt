@@ -11,6 +11,9 @@ import dev.zacsweers.metro.SingleIn
 
 interface LibroFmWishlistSyncStatusRepo {
   suspend fun getSyncedIsbns(): List<String>
+
+  /** Every recorded sync, `true` meaning the sync succeeded. */
+  suspend fun allStatuses(): Map<String, Boolean>
 }
 
 @Inject
@@ -23,5 +26,9 @@ class RealLibroFmWishlistSyncStatusRepo(
 
   override suspend fun getSyncedIsbns(): List<String> = withContext(ioDispatcher) {
     wishlistSyncStatusQueries.getIsbns().executeAsList()
+  }
+
+  override suspend fun allStatuses(): Map<String, Boolean> = withContext(ioDispatcher) {
+    wishlistSyncStatusQueries.selectAll().executeAsList().associate { it.isbn to it.is_sync_successful }
   }
 }

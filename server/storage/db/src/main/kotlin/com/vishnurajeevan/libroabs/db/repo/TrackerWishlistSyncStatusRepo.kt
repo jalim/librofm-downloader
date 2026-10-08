@@ -12,6 +12,9 @@ import dev.zacsweers.metro.SingleIn
 
 interface TrackerWishlistSyncStatusRepo {
   suspend fun getSyncedIsbns(): List<String>
+
+  /** Every recorded sync, `true` meaning the sync succeeded. */
+  suspend fun allStatuses(): Map<String, Boolean>
 }
 
 @Inject
@@ -24,5 +27,9 @@ class RealTrackerWishlistSyncStatusRepo(
 
   override suspend fun getSyncedIsbns(): List<String> = withContext(ioDispatcher) {
     queries.getIsbns().executeAsList()
+  }
+
+  override suspend fun allStatuses(): Map<String, Boolean> = withContext(ioDispatcher) {
+    queries.selectAll().executeAsList().associate { it.isbn to it.is_sync_successful }
   }
 }

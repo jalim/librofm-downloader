@@ -1,0 +1,16 @@
+CREATE TABLE download_attempt (
+  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+  isbn TEXT NOT NULL,
+  title TEXT NOT NULL,
+  trigger_source TEXT NOT NULL,
+  status TEXT NOT NULL,
+  error TEXT,
+  format TEXT,
+  requested_format TEXT,
+  queued_at INTEGER NOT NULL,
+  started_at INTEGER,
+  finished_at INTEGER
+);
+
+CREATE INDEX download_attempt_isbn ON download_attempt(isbn);
+CREATE INDEX download_attempt_status ON download_attempt(status);

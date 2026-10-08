@@ -38,4 +38,8 @@ interface DatabaseComponent {
   @SingleIn(AppScope::class)
   @Provides
   fun pdfExtrasQueries(db: Database): PdfExtraDownloadHistoryQueries = db.pdfExtraDownloadHistoryQueries
+
+  @SingleIn(AppScope::class)
+  @Provides
+  fun downloadAttemptQueries(db: Database): DownloadAttemptQueries = db.downloadAttemptQueries
 }
