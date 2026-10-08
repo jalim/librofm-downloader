@@ -7,7 +7,7 @@ import com.vishnurajeevan.libroabs.db.repo.LibroFmWishlistSyncStatusRepo
 import com.vishnurajeevan.libroabs.db.repo.TrackerWishlistSyncStatusRepo
 import com.vishnurajeevan.libroabs.db.writer.DbWriter
 import com.vishnurajeevan.libroabs.db.writer.DeleteDownloadHistoryItem
-import com.vishnurajeevan.libroabs.libro.LibroApiHandler
+import com.vishnurajeevan.libroabs.libro.LibroFmBooks
 import com.vishnurajeevan.libroabs.models.libro.Book
 import com.vishnurajeevan.libroabs.models.server.AttemptStatus
 import com.vishnurajeevan.libroabs.models.server.AttemptTrigger
@@ -34,7 +34,7 @@ import kotlinx.coroutines.CancellationException
 @SingleIn(AppScope::class)
 class RealWebUiBackend(
   override val serverInfo: ServerInfo,
-  private val libroClient: LibroApiHandler,
+  private val libroClient: LibroFmBooks,
   private val downloadService: DownloadService,
   private val syncController: SyncController,
   private val attemptRepo: DownloadAttemptRepo,

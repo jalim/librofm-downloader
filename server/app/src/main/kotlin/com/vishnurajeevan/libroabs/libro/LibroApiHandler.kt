@@ -17,7 +17,10 @@ import com.vishnurajeevan.libroabs.storage.Storage
 import com.vishnurajeevan.libroabs.storage.models.AuthToken
 import com.vishnurajeevan.libroabs.storage.models.LibraryMetadata
 import com.vishnurajeevan.libroabs.models.libro.WishlistItemSyncStatus
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.binding
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.prepareGet
@@ -37,6 +40,7 @@ import kotlin.io.path.div
 import kotlin.io.path.outputStream
 
 @Inject
+@ContributesBinding(AppScope::class, binding = binding<LibroFmBooks>())
 class LibroApiHandler(
   serverInfo: ServerInfo,
   private val libroAPI: LibroAPI,
@@ -47,7 +51,7 @@ class LibroApiHandler(
   private val lfdLogger: Logger,
   @Io private val ioDispatcher: CoroutineDispatcher,
   private val dbWriter: DbWriter,
-) {
+) : LibroFmBooks {
   private val dryRun = serverInfo.dryRun
 
   suspend fun fetchLoginData(username: String, password: String) = withContext(ioDispatcher) {
@@ -92,11 +96,11 @@ class LibroApiHandler(
     }
   }
 
-  suspend fun getLocalLibrary(): LibraryMetadata = withContext(ioDispatcher) { libroLibraryStorage.getData() }
+  override suspend fun getLocalLibrary(): LibraryMetadata = withContext(ioDispatcher) { libroLibraryStorage.getData() }
 
-  suspend fun fetchMp3DownloadMetadata(isbn: String): Mp3DownloadMetadata = libroAPI.fetchDownloadMetadata(token, isbn)
+  override suspend fun fetchMp3DownloadMetadata(isbn: String): Mp3DownloadMetadata = libroAPI.fetchDownloadMetadata(token, isbn)
 
-  suspend fun fetchM4bMetadata(isbn: String): Result<M4bMetadata> {
+  override suspend fun fetchM4bMetadata(isbn: String): Result<M4bMetadata> {
     val response = libroAPI.fetchM4BMetadata(token, isbn)
     return if (response.isSuccessful) {
       Result.success(response.body()!!)
@@ -105,7 +109,7 @@ class LibroApiHandler(
     }
   }
 
-  suspend fun downloadM4b(m4bUrl: String, targetDirectory: File) {
+  override suspend fun downloadM4b(m4bUrl: String, targetDirectory: File) {
     if (!dryRun) {
       lfdLogger.v("Downloading M4B: $m4bUrl")
       val url = Url(m4bUrl)
@@ -119,7 +123,7 @@ class LibroApiHandler(
     }
   }
 
-  suspend fun downloadMp3s(data: List<DownloadPart>, targetDirectory: File) {
+  override suspend fun downloadMp3s(data: List<DownloadPart>, targetDirectory: File) {
     data.forEachIndexed { index, part ->
       if (!dryRun) {
         val url = part.url
@@ -154,7 +158,7 @@ class LibroApiHandler(
     }
   }
 
-  suspend fun downloadPdfExtras(
+  override suspend fun downloadPdfExtras(
     isbn: String,
     data: List<PdfExtra>,
     targetDirectory: File
@@ -198,7 +202,7 @@ class LibroApiHandler(
       .wishlist
   }
 
-  suspend fun fetchBookDetails(isbn: String): Book = withContext(ioDispatcher) {
+  override suspend fun fetchBookDetails(isbn: String): Book = withContext(ioDispatcher) {
     libroAPI.fetchAudiobookDetails(token, isbn).data.audiobook
   }
 

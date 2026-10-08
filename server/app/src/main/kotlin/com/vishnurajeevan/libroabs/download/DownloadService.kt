@@ -1,11 +1,11 @@
 package com.vishnurajeevan.libroabs.download
 
-import com.vishnurajeevan.libroabs.converter.ffmpeg.FfmpegClient
+import com.vishnurajeevan.libroabs.converter.ffmpeg.M4bConverter
 import com.vishnurajeevan.libroabs.db.repo.DownloadAttemptRepo
 import com.vishnurajeevan.libroabs.db.writer.DbWriter
 import com.vishnurajeevan.libroabs.db.writer.DownloadItem
 import com.vishnurajeevan.libroabs.db.writer.DownloadPdfExtraItem
-import com.vishnurajeevan.libroabs.libro.LibroApiHandler
+import com.vishnurajeevan.libroabs.libro.LibroFmBooks
 import com.vishnurajeevan.libroabs.libro.createFilenames
 import com.vishnurajeevan.libroabs.libro.createTrackTitles
 import com.vishnurajeevan.libroabs.models.Logger
@@ -58,8 +58,8 @@ class EnqueueResult(
 @SingleIn(AppScope::class)
 class DownloadService(
   private val serverInfo: ServerInfo,
-  private val ffmpegClient: FfmpegClient,
-  private val libroClient: LibroApiHandler,
+  private val ffmpegClient: M4bConverter,
+  private val libroClient: LibroFmBooks,
   @Io private val processingScope: CoroutineScope,
   @Io private val ioDispatcher: CoroutineDispatcher,
   private val processingSemaphore: Semaphore,

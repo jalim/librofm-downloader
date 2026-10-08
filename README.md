@@ -20,16 +20,33 @@ Additionally, if you enable `WRITE_TITLE_TAG`, each track's ID3 `title` field wi
 
 ----
 
-### API Server
-After the initial download of your library, the container will run a API server.
-Bind a host port to `8080` to access the services.
+### Web UI
+After the initial download of your library, the container runs a web server.
+Bind a host port to `8080` and open it in a browser (it works on phones too).
 
+- **Dashboard** - library totals, sync status and recent activity.
+- **Library** - search, filter and sort your libro.fm library. Download, re-download or retry any book, or select several and download them in bulk.
+- **Book page** - details, the files on disk and every attempt for that book. Choose a one-off format (MP3, M4B, ...) for a manual download, or forget a download so the next sync fetches it again.
+- **Queue** - live view of running and waiting downloads with cancel buttons. Download everything that's missing, retry everything that failed, or fetch a book by ISBN.
+- **History** - every download attempt, successful or not, with the error for failures. Filter by status, search, retry or delete records, and clear old ones.
+- **Sync** - run a library sync now (optionally re-downloading everything) and see wishlist and Hardcover sync status.
+- **Settings** - the active configuration (read-only; configure with environment variables).
+
+A failing book no longer stops the rest of a sync: its error is recorded and you can retry it from the UI. Downloads left running when the container stopped are marked as failed on the next start.
+
+#### Protecting the web UI
+Set `WEBUI_PASSWORD` to require a password for the web UI. Sessions use a signed, HTTP-only cookie and last 30 days.
+The JSON endpoints below also require the password in that case, sent as `Authorization: Bearer <password>` or `X-Api-Key: <password>`
+(for example `curl -H "X-Api-Key: ..." http://host:8080/update`). Without a password, anyone who can reach the port has full access, so don't expose it directly to the internet.
+
+### API Server
 Endpoints:
-- `GET`: `/` opens a basic web interface showing the current config and a button to trigger an update
+- `GET`: `/` redirects to the web UI at `/ui`
 - `GET`: `/update` allows you to manually force a refresh (ie: when you just purchased a book). Pass `?overwrite=true` to force download your library.
 - `GET`: `/history` returns a json with your download history
 - `GET`: `/history/{isbn}` returns the single entry for an isbn
 - `DELETE`: `/history/{isbn}` deletes the history entry for an isbn
+- `GET`: `/info` returns the current configuration (credentials are never included)
 
 
 ----
@@ -75,7 +92,7 @@ services:
       - /mnt/runtime/appdata/librofm-downloader:/data
       - /mnt/user/media/audiobooks:/media
     ports:
-      # optional if you want to use the /update webhook or webui
+      # optional if you want to use the web UI or the /update webhook
       - 8080:8080 
     environment:
       - LIBRO_FM_USERNAME=<>
@@ -85,6 +102,7 @@ services:
       - PARALLEL_COUNT="2" #increase parallel processing limit, default is 1, careful with memory usage!
       - LOG_LEVEL="NONE/INFO/VERBOSE"
       - SYNC_INTERVAL="h/d/w" #choose one
+      - WEBUI_PASSWORD=<> #optional, require a password for the web UI and API
       # MP3 / M4B_MP3_FALLBACK only
       - RENAME_CHAPTERS=true #renames downloaded files with the chapter name provided by libro.fm
       - WRITE_TITLE_TAG=true #this one requires RENAME_CHAPTERS to be true as well
