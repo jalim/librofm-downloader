@@ -16,4 +16,9 @@ dependencies {
   implementation(libs.ktor.server.content.negotiation)
   implementation(libs.ktor.server.netty)
   implementation(libs.ktor.server.resources)
+  implementation(libs.kotlinx.coroutines)
+  implementation(libs.kotlinx.serialization.json)
+
+  testImplementation(libs.kotlin.test.junit)
+  testImplementation(libs.ktor.server.test.host)
 }

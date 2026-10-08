@@ -86,6 +86,8 @@ class LibroDownloader : SuspendingCliktCommand("LibroFm Downloader") {
     .varargValues()
     .default(emptyList())
 
+  private val webUiPassword: String? by option("--web-ui-password", envvar = "WEBUI_PASSWORD")
+
   private val audioQuality: String by option("--audio-quality", envvar = "AUDIO_QUALITY")
     .default("128k")
 
@@ -135,7 +137,8 @@ class LibroDownloader : SuspendingCliktCommand("LibroFm Downloader") {
       audioQuality = audioQuality,
       skipTrackingIsbns = skipTrackingIsbns,
       hardcoverSyncMode = hardcoverOptions?.hardcoverSyncMode ?: TrackerSyncMode.ALL,
-      webhookUrls = webhookUrls
+      webhookUrls = webhookUrls,
+      webUiPassword = webUiPassword?.takeIf { it.isNotEmpty() },
     )
 
     val graph = createGraphFactory<AppComponent.Factory>().create(serverInfo)

@@ -31,6 +31,8 @@ data class ServerInfo(
   val hardcoverSyncMode: TrackerSyncMode,
   val webhookUrls: List<String> = emptyList(),
   val libroFmHeaders: Map<String, String> = emptyMap(),
+  /** When set, the web UI and API require this password. */
+  @Redacted val webUiPassword: String? = null,
 ) {
   fun prettyPrint(): String {
     return """
@@ -53,6 +55,7 @@ data class ServerInfo(
       |  Tracker sync mode: $hardcoverSyncMode
       |  Webhook Urls: $webhookUrls,
       |  LibroFM Headers: $libroFmHeaders
+      |  Web UI Password Protected: ${!webUiPassword.isNullOrEmpty()}
     """.trimMargin()
   }
 }

@@ -19,6 +19,7 @@ class Info
 class InfoRouteHandler(private val serverInfo: ServerInfo): RouteHandler<Info> {
   context(routingContext: RoutingContext)
   override suspend fun handle(route: Info) {
-    routingContext.call.respond(serverInfo)
+    // Never expose credentials over the API.
+    routingContext.call.respond(serverInfo.copy(libroPassword = "", trackerToken = null, webUiPassword = null))
   }
 }
